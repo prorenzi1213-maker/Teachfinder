@@ -1,4 +1,23 @@
 <?php
+
+if (getenv('MYSQLHOST')) {
+
+    // RAILWAY (production)
+    $host = $_ENV['MYSQLHOST'];
+    $user = $_ENV['MYSQLUSER'];
+    $pass = $_ENV['MYSQLPASSWORD'];
+    $db   = $_ENV['MYSQLDATABASE'];
+    $port = $_ENV['MYSQLPORT'];
+
+} else {
+
+    // LOCAL (XAMPP)
+    $host = 'localhost';
+    $db   = 'teachfinder_db';
+    $user = 'root';
+    $pass = '';
+    $port = 3306;
+}
 $host = 'localhost';
 $db   = 'teachfinder_db';
 $user = 'root';
