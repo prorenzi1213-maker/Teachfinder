@@ -1,23 +1,18 @@
 <?php
 
-$host = getenv('MYSQLHOST') 
-     ?: parse_url(getenv('MYSQL_URL'), PHP_URL_HOST);
+$url = getenv('MYSQL_URL');
 
-$user = getenv('MYSQLUSER') 
-     ?: 'root';
-
-$pass = getenv('MYSQLPASSWORD') 
-     ?: getenv('MYSQL_ROOT_PASSWORD');
-
-$db   = getenv('MYSQLDATABASE') 
-     ?: getenv('MYSQL_DATABASE');
-
-$port = getenv('MYSQLPORT') 
-     ?: 3306;
-
-if (!$host || !$user || !$db) {
+if (!$url) {
     die("Missing DB environment variables");
 }
+
+$parts = parse_url($url);
+
+$host = $parts['host'];
+$port = $parts['port'] ?? 3306;
+$user = $parts['user'];
+$pass = $parts['pass'];
+$db   = ltrim($parts['path'], '/');
 
 $conn = new mysqli($host, $user, $pass, $db, $port);
 
