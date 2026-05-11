@@ -1,20 +1,13 @@
 <?php
 
-if (getenv('MYSQLHOST')) {
+$host = getenv('MYSQLHOST');
+$user = getenv('MYSQLUSER');
+$pass = getenv('MYSQLPASSWORD');
+$db   = getenv('MYSQLDATABASE');
+$port = getenv('MYSQLPORT');
 
-    $host = $_ENV['MYSQLHOST'];
-    $user = $_ENV['MYSQLUSER'];
-    $pass = $_ENV['MYSQLPASSWORD'];
-    $db   = $_ENV['MYSQLDATABASE'];
-    $port = $_ENV['MYSQLPORT'];
-
-} else {
-
-    $host = 'localhost';
-    $user = 'root';
-    $pass = '';
-    $db   = 'teachfinder_db';
-    $port = 3306;
+if (!$host) {
+    die("Missing DB environment variables");
 }
 
 $conn = new mysqli($host, $user, $pass, $db, $port);
