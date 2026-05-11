@@ -18,13 +18,11 @@ if (getenv('MYSQLHOST')) {
     $pass = '';
     $port = 3306;
 }
-$host = 'localhost';
-$db   = 'teachfinder_db';
-$user = 'root';
-$pass = '';
+
 $charset = 'utf8mb4';
 
-$dsn = "mysql:host=$host;dbname=$db;charset=$charset";
+$dsn = "mysql:host=$host;port=$port;dbname=$db;charset=$charset";
+
 $options = [
     PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
     PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
@@ -32,10 +30,7 @@ $options = [
 ];
 
 try {
-     $pdo = new PDO($dsn, $user, $pass, $options); 
-} catch (\PDOException $e) {
-     throw new \PDOException($e->getMessage(), (int)$e->getCode());
+    $pdo = new PDO($dsn, $user, $pass, $options);
+} catch (PDOException $e) {
+    die("DB Connection failed: " . $e->getMessage());
 }
-
-
-?>
