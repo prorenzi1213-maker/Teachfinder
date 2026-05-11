@@ -3,7 +3,7 @@
 $host = getenv('MYSQLHOST');
 $user = getenv('MYSQLUSER');
 $pass = getenv('MYSQLPASSWORD');
-$db   = getenv('MYSQL_DATABASE');  // 👈 IMPORTANT CHANGE
+$db   = getenv('MYSQLDATABASE');  // 👈 IMPORTANT CHANGE
 $port = getenv('MYSQLPORT');
 
 if (!$host) {
