@@ -3,7 +3,7 @@
 $url = getenv('MYSQL_URL');
 
 if (!$url) {
-    die("Missing DB environment variables");
+    die("Missing DB environment variables (MYSQL_URL not found)");
 }
 
 $parts = parse_url($url);
