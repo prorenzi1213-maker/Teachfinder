@@ -1,13 +1,7 @@
 <?php
 session_start();
-
-if (file_exists('config.php')) {
-    require_once 'config.php';
-} else {
-    die("config.php not found");
-}
+// DB connection not needed on landing page
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -27,10 +21,9 @@ if (file_exists('config.php')) {
     </style>
 </head>
 <body>
-
     <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
         <div class="container">
-            <a class="navbar-brand fw-bold" href="frontpage.php">
+            <a class="navbar-brand fw-bold" href="index.php">
                 <i class="fas fa-graduation-cap text-primary"></i> TeachFinder
             </a>
             <div class="d-flex">
