@@ -1,8 +1,9 @@
 <?php
 /**
- * mailer.php — Sends email via Resend API (HTTP, no SMTP port needed).
- * Resend free tier: 3,000 emails/month.
- * Sign up at https://resend.com and add RESEND_API_KEY to Railway Variables.
+ * mailer.php — Sends email via Brevo (Sendinblue) API.
+ * Free tier: 300 emails/day, no domain needed.
+ * Sign up at https://brevo.com
+ * Add BREVO_API_KEY to Railway Variables.
  */
 
 function getAppUrl(): string {
@@ -12,46 +13,37 @@ function getAppUrl(): string {
     return $scheme . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost');
 }
 
-/**
- * Send email via Resend API using cURL (no SMTP, works on Railway).
- */
 function sendEmail(string $to_email, string $to_name, string $subject, string $html, string $text): bool {
-    $api_key = getenv('RESEND_API_KEY');
+    $api_key    = getenv('BREVO_API_KEY');
+    $from_email = getenv('MAIL_USERNAME') ?: 'prorenzi1213@gmail.com';
 
     if (empty($api_key)) {
-        error_log("RESEND_API_KEY not set — cannot send email.");
+        error_log("BREVO_API_KEY not set.");
         if (session_status() === PHP_SESSION_ACTIVE) {
-            $_SESSION['mailer_error'] = "RESEND_API_KEY not configured on server.";
+            $_SESSION['mailer_error'] = "Email service not configured (BREVO_API_KEY missing).";
         }
         return false;
     }
 
-    $from = getenv('MAIL_FROM') ?: ('TeachFinder <' . (getenv('RESEND_TEST_EMAIL') ?: 'onboarding@resend.dev') . '>');
-
-    // Resend free tier: can only send to verified email (your own)
-    // Set RESEND_TEST_EMAIL env var to override recipient for testing
-    $test_email = getenv('RESEND_TEST_EMAIL');
-    $actual_to  = $test_email ?: $to_email;
-    $actual_name = $test_email ? 'Test' : $to_name;
-
     $payload = json_encode([
-        'from'    => $from,
-        'to'      => ["{$actual_name} <{$actual_to}>"],
-        'subject' => $subject,
-        'html'    => $html,
-        'text'    => $text,
+        'sender'      => ['name' => 'TeachFinder', 'email' => $from_email],
+        'to'          => [['email' => $to_email, 'name' => $to_name]],
+        'subject'     => $subject,
+        'htmlContent' => $html,
+        'textContent' => $text,
     ]);
 
-    $ch = curl_init('https://api.resend.com/emails');
+    $ch = curl_init('https://api.brevo.com/v3/smtp/email');
     curl_setopt_array($ch, [
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_POST           => true,
         CURLOPT_POSTFIELDS     => $payload,
         CURLOPT_HTTPHEADER     => [
-            'Authorization: Bearer ' . $api_key,
+            'api-key: ' . $api_key,
             'Content-Type: application/json',
+            'Accept: application/json',
         ],
-        CURLOPT_TIMEOUT        => 15,
+        CURLOPT_TIMEOUT => 15,
     ]);
 
     $response  = curl_exec($ch);
@@ -60,28 +52,17 @@ function sendEmail(string $to_email, string $to_name, string $subject, string $h
     curl_close($ch);
 
     if ($curl_err) {
-        error_log("Resend curl error: " . $curl_err);
+        error_log("Brevo curl error: " . $curl_err);
         if (session_status() === PHP_SESSION_ACTIVE) {
-            $_SESSION['mailer_error'] = "curl: " . $curl_err;
+            $_SESSION['mailer_error'] = "Connection error: " . $curl_err;
         }
         return false;
     }
 
-    if ($http_code !== 200 && $http_code !== 201) {
-        $msg = "Resend HTTP $http_code: $response";
-        error_log($msg);
-        if (session_status() === PHP_SESSION_ACTIVE) {
-            $data = json_decode($response, true);
-            $_SESSION['mailer_error'] = $data['message'] ?? $msg;
-        }
-        return false;
-    }
-
-    // Check if response has an id (success)
-    $result = json_decode($response, true);
-    if (empty($result['id'])) {
-        $msg = "Resend no id: $response";
-        error_log($msg);
+    if ($http_code < 200 || $http_code >= 300) {
+        $data = json_decode($response, true);
+        $msg  = $data['message'] ?? "HTTP $http_code: $response";
+        error_log("Brevo API error: " . $msg);
         if (session_status() === PHP_SESSION_ACTIVE) {
             $_SESSION['mailer_error'] = $msg;
         }
