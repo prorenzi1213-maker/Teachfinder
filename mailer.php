@@ -20,6 +20,9 @@ function sendEmail(string $to_email, string $to_name, string $subject, string $h
 
     if (empty($api_key)) {
         error_log("RESEND_API_KEY not set — cannot send email.");
+        if (session_status() === PHP_SESSION_ACTIVE) {
+            $_SESSION['mailer_error'] = "RESEND_API_KEY not configured on server.";
+        }
         return false;
     }
 
@@ -52,14 +55,29 @@ function sendEmail(string $to_email, string $to_name, string $subject, string $h
 
     if ($curl_err) {
         error_log("Resend curl error: " . $curl_err);
+        if (session_status() === PHP_SESSION_ACTIVE) {
+            $_SESSION['mailer_error'] = "curl: " . $curl_err;
+        }
         return false;
     }
 
     if ($http_code !== 200 && $http_code !== 201) {
-        error_log("Resend API error ($http_code): " . $response);
+        $msg = "Resend HTTP $http_code: $response";
+        error_log($msg);
         if (session_status() === PHP_SESSION_ACTIVE) {
             $data = json_decode($response, true);
-            $_SESSION['mailer_error'] = $data['message'] ?? "HTTP $http_code";
+            $_SESSION['mailer_error'] = $data['message'] ?? $msg;
+        }
+        return false;
+    }
+
+    // Check if response has an id (success)
+    $result = json_decode($response, true);
+    if (empty($result['id'])) {
+        $msg = "Resend no id: $response";
+        error_log($msg);
+        if (session_status() === PHP_SESSION_ACTIVE) {
+            $_SESSION['mailer_error'] = $msg;
         }
         return false;
     }
