@@ -1,0 +1,19 @@
+[phases.setup]
+nixPkgs = [
+  "php83",
+  "php83Extensions.pdo_mysql",
+  "php83Extensions.curl",
+  "php83Extensions.mbstring",
+  "php83Extensions.openssl",
+  "php83Extensions.tokenizer",
+  "php83Extensions.dom",
+  "php83Extensions.xml",
+  "php83Extensions.fileinfo",
+  "php83Packages.composer"
+]
+
+[phases.install]
+cmds = ["composer install --no-dev --optimize-autoloader --no-interaction --ignore-platform-reqs"]
+
+[start]
+cmd = "php -d display_errors=0 -d log_errors=1 -S 0.0.0.0:$PORT -t . router.php"
