@@ -28,9 +28,15 @@ function sendEmail(string $to_email, string $to_name, string $subject, string $h
 
     $from = getenv('MAIL_FROM') ?: 'TeachFinder <onboarding@resend.dev>';
 
+    // Resend free tier: can only send to verified email (your own)
+    // Set RESEND_TEST_EMAIL env var to override recipient for testing
+    $test_email = getenv('RESEND_TEST_EMAIL');
+    $actual_to  = $test_email ?: $to_email;
+    $actual_name = $test_email ? 'Test' : $to_name;
+
     $payload = json_encode([
         'from'    => $from,
-        'to'      => ["{$to_name} <{$to_email}>"],
+        'to'      => ["{$actual_name} <{$actual_to}>"],
         'subject' => $subject,
         'html'    => $html,
         'text'    => $text,
