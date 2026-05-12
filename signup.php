@@ -53,8 +53,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         if (in_array($email_domain, $blocked_domains)) {
             $message = "<div class='alert alert-danger text-center'>Disposable email addresses are not allowed.</div>";
 
-        } elseif (!checkdnsrr($email_domain, "MX") && !checkdnsrr($email_domain, "A")) {
-            $message = "<div class='alert alert-danger text-center'>This email domain does not exist. Please use a valid email address.</div>";
+        } elseif (false && !checkdnsrr($email_domain, "MX") && !checkdnsrr($email_domain, "A")) {
+            // DNS check disabled on Railway (can timeout)
+            $message = "<div class='alert alert-danger text-center'>This email domain does not exist.</div>";
 
         } else {
             // Check if email already exists in DB

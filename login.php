@@ -1,7 +1,13 @@
 <?php
 session_start();
 require_once 'config.php';
-require_once 'mailer.php';
+
+// Wrap mailer include so a missing/broken vendor doesn't crash the whole page
+try {
+    require_once 'mailer.php';
+} catch (Throwable $e) {
+    error_log("mailer.php load error: " . $e->getMessage());
+}
 
 $message = '';
 
@@ -27,7 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 'otp_expiry' => time() + 600 // 10 minutes
             ];
 
-            if (sendOTPEmail($user['email'], $user['username'], $otp)) {
+            if (function_exists('sendOTPEmail') && sendOTPEmail($user['email'], $user['username'], $otp)) {
                 header("Location: login_otp.php");
                 exit();
             } else {
